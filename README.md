@@ -5,7 +5,8 @@ The Code provides two Drum Voices that can be triggered by the Upper/Lower CV In
 
 The sound of the voices can be altered with several parameters. The button selects the setting and the potentiometer changes the value. To prevent changing a setting to the actual value of the potentiometer while selecting a new parameter the potentiometer needs to 'catch' the peremeter value first. (E.g if the parameter has the value 0.0, the potentiometer needs to turned fully CCW before the paraemter is going to be changed)
 
-The LEDs displays the number of the settings in binary format. At the moment there are 10 Setting available:
+The LEDs displays the number of the settings in binary format. The LSB ist the bottommost LED. At the moment there are 10 Setting available:
+
 ### Drums
 See also https://www.pjrc.com/teensy/gui/index.html?info=AudioSynthSimpleDrum
 
@@ -37,6 +38,7 @@ Amplifies near the Corner Frequency. Could lead to clipping if the Values aer to
 
 ### Reverb:
 See also https://www.pjrc.com/teensy/gui/index.html?info=AudioEffectFreeverb
+
 #### 8:Reverb
 How much Wet Signal mixed into the output (0% is dry signal only)
 
@@ -45,3 +47,5 @@ Amount of reverb
 
 #### 10: Reverb Dampening
 More damping causes higher frequency echo to decay, creating a softer sound.
+
+
