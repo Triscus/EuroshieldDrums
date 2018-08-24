@@ -20,7 +20,7 @@ Frequency of the Drum from 60 - 5000Hz - can be changed by definition
 #### 2:Length
 Set the duration of the envelope.(10 to 2000 ms) At the moment retriggering is not implemented. If a trigger is received while the envelope is active, it will be ignored.
 
-Tip: Sending a Gate Signal will continueously trigger the drum if the enevelope is short enough.
+*Sending a Gate Signal will continuously trigger the drum if the envelope is short enough. 
 
 #### 3:2nd
 Emulates a two-headed tom, by adding a second sine wave that is harmonized a perfect fifth above the base frequency. Using this involves a slight CPU penalty. 
