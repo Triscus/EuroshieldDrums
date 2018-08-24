@@ -1,9 +1,9 @@
 # EuroshieldDrums
 Simple Drum for the Euroshield Eurorack Module by 1010 Music
 
-The Code provides two Drum Voices that can be triggered by the Upper/Lower CV Inputs. It uses the Teensy Audio Library
+The Code provides two drum voices that can be triggered by the Upper/Lower CV Inputs. It uses the Teensy Audio Library
 
-The sound of the voices can be altered with several parameters. The button selects the setting and the potentiometer changes the value.
+The sound of the voices can be altered with several parameters. The button selects the setting, the potentiometer changes the value.
 
 To prevent a parameter is changed to the actual value of the potentiometer while selecting a new parameter, the potentiometer needs to 'catch' the parameter value first. (E.g if the parameter has the value 0.0, the potentiometer needs to turned fully CCW before the parameter is going to be changed)
 
@@ -16,7 +16,7 @@ See also https://www.pjrc.com/teensy/gui/index.html?info=AudioSynthSimpleDrum
 Frequency of the Drum from 60 - 5000Hz - can be changed by definition
 
 #### 2:Length
-Set the duration of the envelope. At the moment retriggering is not implemented. If a trigger is received while the envelope is active, it will be ignored.
+Set the duration of the envelope.(10 to 2000 ms) At the moment retriggering is not implemented. If a trigger is received while the envelope is active, it will be ignored.
 
 Tip: Sending a Gate Signal will continueously trigger the drum if the enevelope is short enough.
 
@@ -52,8 +52,11 @@ More damping causes higher frequency echo to decay, creating a softer sound.
 
 ## Output
 My Euroshield uses a ILI9342 TFT to display the values, but the relevant parts of the code are commented out by default.
-Per Default is a Serial Out which prints out the values of both Voices every second 
+Per Default is a Serial Out which prints out the values of both Voices every second. Look out for the Definitions at the beginning. 
+
+The TFT commands should be compatible with the Adafruit libraries.
 
 ## KnownIssues
 
 * Most often the lowest value of the potentitometer is 1, but sometimes it is 0. This causes the parameter values to be negative, which can lead to unexpected behaviour
+* Serial Out sometimes prints out only values for one drum voice instead of two
