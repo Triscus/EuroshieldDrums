@@ -5,6 +5,7 @@
 #include <SerialFlash.h>
 #include <elapsedMillis.h>
 
+//uncomment here if you want the Serial Out or TFT
 //#define TFT
 #define SERIAL_OUT
 
@@ -65,6 +66,7 @@ AudioConnection          patchCord18(reverbMixerLower, 0, audioOutput, 1);
 AudioControlSGTL5000     audioShield;    //xy=452,1366
 										 // GUItool: end automatically generated code
 
+// Arrays for Upper / Lower Drum Voices
 AudioAnalyzePeak*         peak[2];
 AudioSynthSimpleDrum* drums[2] = { &drumUpper,&drumLower };
 AudioEffectFreeverb* reverb[2] = { &reverbUpper,&reverbLower };
@@ -115,13 +117,12 @@ double maxPeakCV[2];
 #define MIXER_CHANNEL_REVERB 1
 #define MIN_DRUM_FREQ 60
 #define MAX_DRUM_FREQ 5000
-#define MAX_DELAY_TIME 1500
+#define MIN_DRUM_LENGTH 10
+#define MAX_DRUM_LENGTH 2000
 
 int drumFreq[2] = { 100,500 };
 int drumFreq_new[2];
 
-#define MIN_DRUM_LENGTH 10
-#define MAX_DRUM_LENGTH 2000
 int drumLength[2] = { 100,100 };
 int drumLength_new[2];
 
@@ -150,15 +151,16 @@ double dampening[2] = { 0.0,0.0 };
 double dampening_new[2];
 
 double filterMixerGain[2][3] = {
-	{1,0, 0}, //LowPass , BandPass, HighPass
+	{1,0, 0},
 	{1,0, 0}
 };
 
+//Array for holding the Mixer Config for Filter Modes
 double mixerSettings[3][3] =
 {
-	{1.0,0.0,0.0},
-	{0.0,1.0,0.0},
-	{0.0,0.0,1.0}
+	{1.0,0.0,0.0},	// LowPass
+	{0.0,1.0,0.0},	// BandPass
+	{0.0,0.0,1.0}	// HighPass
 };
 
 uint8_t filterModeIndex[2] = { 0,0 };
@@ -205,6 +207,7 @@ void setup()
 	peak[DRUM_UPPER] = &peakCVUpper;
 	peak[DRUM_LOWER] = &peakCVLower;
 
+	//initial Configuration
 	for (int i = 0; i < DRUM_COUNT; i++) {
 		drums[i]->frequency(drumFreq[i]);
 		drums[i]->length(drumLength[i]);
@@ -218,11 +221,12 @@ void setup()
 		}
 	}
 
-	pinMode(buttonInput, INPUT);
-
+	//Pin configuration
 	for (int i = 0; i < ledPinCount; i++)
 		pinMode(ledPins[i], OUTPUT);
+	pinMode(buttonInput, INPUT);
 
+	//Setting the LEDS to Frequency Mode
 	digitalWrite(ledPins[3], LOW);
 	digitalWrite(ledPins[2], LOW);
 	digitalWrite(ledPins[1], LOW);
@@ -233,7 +237,7 @@ void loop()
 {
 	int buttonState = digitalRead(buttonInput);
 
-	if (buttonState != lastButtonState) { // Probably needs debouncing, can't tell yet cause LEDs didn't work when I tested...
+	if (buttonState != lastButtonState) {
 		long ms = millis();
 		if (ms - lastButtonMS > debounceMS) {
 			if (buttonState == LOW) {
@@ -247,6 +251,7 @@ void loop()
 				tft.print(maxMem);
 
 #endif
+				//calculating the LEDS
 				if (((mode + 1) % 2) > 0) { digitalWrite(ledPins[0], HIGH); }
 				else { digitalWrite(ledPins[0], LOW); }
 
@@ -255,6 +260,7 @@ void loop()
 
 				if (((mode + 1) % 8) > 3) { digitalWrite(ledPins[2], HIGH); }
 				else { digitalWrite(ledPins[2], LOW); }
+
 				if (((mode + 1) % 16) > 7) { digitalWrite(ledPins[3], HIGH); }
 				else { digitalWrite(ledPins[3], LOW); }
 			}
@@ -263,27 +269,33 @@ void loop()
 		lastButtonState = buttonState;
 	}
 
+	//reset potTracking if the mode has changes
 	if (lastmode != mode) {
 		potTracking[0] = false;
 		potTracking[1] = false;
 		lastmode = mode;
 	}
-	for (int i = 0; i < DRUM_COUNT; i++) {
+
+	for (int i = 0; i < DRUM_COUNT; i++) { //for each Drum Voice [i]
+		//smooth the values a bit
 		int bothValues;
 		bothValues = potValueLast[i] + analogRead(potInput[i]);
-
 		potValue[i] = bothValues / 2;
 
 		switch (mode) {
 		case 0: //Frequency
 
+			//Map the Pot Value to Frequency
+
 			drumFreq_new[i] = map(potValue[i], POT_MIN_VALUE, POT_MAX_VALUE, MIN_DRUM_FREQ, MAX_DRUM_FREQ);
 
+			//if the actual pot value is near the set value, activate pot tracking
 			if (drumFreq_new[i] < drumFreq[i] + 10 && drumFreq_new[i] > drumFreq[i] - 10)
 			{
 				potTracking[i] = true;
 			}
 
+			//set the parameter value
 			if (potTracking[i] == true)
 			{
 				drumFreq[i] = drumFreq_new[i];
@@ -389,7 +401,6 @@ void loop()
 		case 7: //Reverb - Level
 
 			reverbLvl_new[i] = mapfloat(potValue[i], POT_MIN_VALUE, POT_MAX_VALUE, 0.0, 1.0);
-			dryLvl[i] = 1.0 - reverbLvl_new[i];
 
 			if (reverbLvl_new[i] < reverbLvl[i] + 0.01 && reverbLvl_new[i] > reverbLvl[i] - 0.01)
 			{
@@ -437,6 +448,25 @@ void loop()
 
 		potValueLast[i] = potValue[i];
 
+		// set the parameters
+		drums[i]->frequency(drumFreq[i]);
+		drums[i]->length(drumLength[i]);
+		drums[i]->secondMix(drumSecondMix[i]);
+		drums[i]->pitchMod(drumPitchMod[i]);
+		reverb[i]->roomsize(roomsize[i]);
+		reverb[i]->damping(dampening[i]);
+		dryLvl[i] = 1.0 - reverbLvl[i];
+		reverbMixer[i]->gain(MIXER_CHANNEL_DRY, dryLvl[i]);
+		reverbMixer[i]->gain(MIXER_CHANNEL_REVERB, reverbLvl[i]);
+		filter[i]->frequency(filterFreq[i]);
+		filter[i]->resonance(filterReso[i]);
+
+		for (int channel = 0; channel < 3; channel++)
+		{
+			filterMixer[i]->gain(channel, mixerSettings[filterModeIndex[i]][channel]);
+		}
+
+		//read the CV Inputs / Trigger
 		peakCV[i] = peakCVLastRawValue[i];
 		if (peak[i]->available()) {
 			peakCV[i] = peak[i]->read();
@@ -449,22 +479,7 @@ void loop()
 		}
 		peakCVLastRawValue[i] = peakCV[i];
 
-		drums[i]->frequency(drumFreq[i]);
-		drums[i]->length(drumLength[i]);
-		drums[i]->secondMix(drumSecondMix[i]);
-		drums[i]->pitchMod(drumPitchMod[i]);
-		reverb[i]->roomsize(roomsize[i]);
-		reverb[i]->damping(dampening[i]);
-		reverbMixer[i]->gain(MIXER_CHANNEL_DRY, dryLvl[i]);
-		reverbMixer[i]->gain(MIXER_CHANNEL_REVERB, reverbLvl[i]);
-		filter[i]->frequency(filterFreq[i]);
-		filter[i]->resonance(filterReso[i]);
-
-		for (int channel = 0; channel < 3; channel++)
-		{
-			filterMixer[i]->gain(channel, mixerSettings[filterModeIndex[i]][channel]);
-		}
-
+		//play the drums when the peak value is > 0.5 and the former drum hit has ended
 		if (i == DRUM_UPPER)
 		{
 			if (peakCV[i] > 0.5 && drumUpperTriggered > drumLength[i])
@@ -474,7 +489,7 @@ void loop()
 				drumUpperTriggered = 0;
 			}
 		}
-		else
+		else //lower drums
 		{
 			if (peakCV[i] > 0.5 && drumLowerTriggered > drumLength[i])
 			{
@@ -482,6 +497,9 @@ void loop()
 				drumLowerTriggered = 0;
 			}
 		}
+
+		//-------------OUTPUT / DEBUG--------
+
 #ifdef TFT
 
 		if (timeElapsed > displayRefreshInterval)
@@ -614,7 +632,7 @@ void loop()
 	}
 }
 
-float mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+float mapfloat(float x, float in_min, float in_max, float out_min, float out_max) //function for mapping floats
 {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
