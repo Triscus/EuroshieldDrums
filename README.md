@@ -7,7 +7,9 @@ The sound of the voices can be altered with several parameters. The button selec
 
 To prevent a parameter is changed to the actual value of the potentiometer while selecting a new parameter, the potentiometer needs to 'catch' the parameter value first. (E.g if the parameter has the value 0.0, the potentiometer needs to turned fully CCW before the parameter is going to be changed)
 
-The LEDs displays the number of the settings in binary format. The LSB ist the bottommost LED. At the moment there are 10 Setting available:
+The LEDs displays the number of the settings in binary format. The LSB is the bottommost LED. At the moment there are 10 Setting available:
+
+[https://github.com/Triscus/EuroshieldDrums/blob/master/EuroShieldDrums_Audio_Scheme.JPG]
 
 ### Drums
 See also https://www.pjrc.com/teensy/gui/index.html?info=AudioSynthSimpleDrum
