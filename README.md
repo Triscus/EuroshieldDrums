@@ -48,4 +48,10 @@ Amount of reverb
 #### 10: Reverb Dampening
 More damping causes higher frequency echo to decay, creating a softer sound.
 
+## Output
+My Euroshield uses a ILI9342 TFT to display the values, but the relevant parts of the code are commented out by default.
+Per Default is a Serial Out which prints out the values of both Voices every second 
 
+## KnownIssues
+
+* Most often the lowest value of the potentitometer is 1, but sometimes it is 0. This causes the parameter values to be negative, which can lead to unexpected behaviour
