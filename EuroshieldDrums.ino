@@ -190,7 +190,7 @@ void setup()
 	Serial.begin(15200);
 
 	//-----AUDIO-----
-	AudioMemory(128);
+	AudioMemory(28);
 
 	audioShield.enable();
 	audioShield.inputSelect(AUDIO_INPUT_LINEIN);
